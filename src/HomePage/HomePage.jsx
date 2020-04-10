@@ -114,8 +114,9 @@ function HomePage() {
   const [open, setOpen] = React.useState(false);
   const [departing, setDeparting] = React.useState('');
   const [arriving, setArriving] = React.useState('');
-  const [departingFlights, setDepartingFlights] = React.useState('');
-  const [arrivingFlights, setArrivingFlights] = React.useState('');
+  const [allFlights, setAllFlights] = React.useState([]);
+  const [lastDeparture, setLastDeparture] = React.useState(0);
+  const [lastArrival, setLastArrival] = React.useState(0);
   const [itemValue, setItemValue] = useState('');
   const handleOpen = () => {
     setOpen(true);
@@ -149,21 +150,22 @@ function HomePage() {
   const [modalStyle] = React.useState(getModalStyle);
 
   const changeDeparting = (e) => {
-    let curTimestamp = new Date().getTime()/1000 | 0;
+    let curTimestamp = new Date().getTime() / 1000 | 0;
     console.log("curTimestamp ====> ", curTimestamp);
     let tm = e.target.value;
-    getDeparture(itemValue[0], curTimestamp - tm * 60 * 1000, curTimestamp + tm * 60 * 1000);
-    getArrival(itemValue[0], curTimestamp - tm * 60 * 1000, curTimestamp + tm * 60 * 1000);
+    let last = curTimestamp - tm * 60 * 60;
+    console.log(last);
+    setLastDeparture(last);
     setDeparting(e.target.value);
   }
 
   const changeArriving = (e) => {
-    let curTimestamp = new Date().getTime()/1000 | 0;
+    let curTimestamp = new Date().getTime() / 1000 | 0;
     console.log("curTimestamp ====> ", curTimestamp);
     let tm = e.target.value;
-    getDeparture(itemValue[0], curTimestamp - tm * 60 * 1000, curTimestamp + tm * 60 * 1000);
-    getArrival(itemValue[0], curTimestamp - tm * 60 * 1000, curTimestamp + tm * 60 * 1000);
-
+    let last = curTimestamp - tm * 60 * 60;
+    console.log(last);
+    setLastArrival(last);
     setArriving(e.target.value);
   }
 
@@ -184,35 +186,45 @@ function HomePage() {
                   {/* <em>None</em> */}
                 </MenuItem>
                 <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
-                <MenuItem value={30}>30</MenuItem>
+                <MenuItem value={40}>40</MenuItem>
+                <MenuItem value={80}>80</MenuItem>
+                <MenuItem value={120}>120</MenuItem>
+                <MenuItem value={500}>500</MenuItem>
               </Select>
             </FormControl>
             <Container maxWidth="lg" fixed className={classes.modalContent}>
               <Grid container justify="center">
                 {
-                  departingFlights && departingFlights.map((val, key) => {
-                    return (
-                    <Card className={classes.root} variant="outlined" key={key}>
-                      <CardContent>
-                        <Typography className={classes.cardTitle} color="textSecondary" gutterBottom>
-                          ICAO: {val.icao24}
-                        </Typography>
-                        <Typography variant="h5" component="h2">
-                          DepartureAirport: {val.estDepartureAirport}
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                          HorizontalDistance : {val.estDepartureAirportHorizDistance}
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                          VerticalDistance : {val.estDepartureAirportVertDistance}
-                          <br />
-                        </Typography>
-                      </CardContent>
-                      {/* <CardActions>
+                  allFlights && allFlights.map((val, key) => {
+                    console.log("val ====> ", val);
+                    return (val.firstSeen > lastDeparture) && (
+                      <Card className={classes.root} variant="outlined" key={key}>
+                        <CardContent>
+                          <Typography className={classes.cardTitle} color="textSecondary" gutterBottom>
+                            ICAO: {val.icao24}
+                          </Typography>
+                          <Typography variant="h5" component="h2">
+                            DepartureAirport: {val.estDepartureAirport}
+                          </Typography>
+                          <Typography variant="h5" component="h2">
+                            ArrivalAirport: {val.estArrivalAirport}
+                          </Typography>
+                          <Typography variant="body2" component="p">
+                            HorizontalDistance : {val.estDepartureAirportHorizDistance}
+                          </Typography>
+                          <Typography variant="body2" component="p">
+                            VerticalDistance : {val.estDepartureAirportVertDistance}
+                            <br />
+                          </Typography>
+                          <Typography variant="body2" component="p">
+                            CallSign : {val.callsign}
+                            <br />
+                          </Typography>
+                        </CardContent>
+                        {/* <CardActions>
                         <Button size="small" onClick={() => { getCityInfo(value); }}>Flight Info</Button>
                       </CardActions> */}
-                    </Card>
+                      </Card>
                     );
                   })
                 }
@@ -234,35 +246,44 @@ function HomePage() {
                   {/* <em>None</em> */}
                 </MenuItem>
                 <MenuItem value={10}>10</MenuItem>
-                <MenuItem value={20}>20</MenuItem>
-                <MenuItem value={30}>30</MenuItem>
+                <MenuItem value={40}>40</MenuItem>
+                <MenuItem value={80}>80</MenuItem>
+                <MenuItem value={120}>120</MenuItem>
+                <MenuItem value={500}>500</MenuItem>
               </Select>
             </FormControl>
             <Container fixed maxWidth="lg" className={classes.modalContent}>
               <Grid container justify="center">
-              {
-                  arrivingFlights && arrivingFlights.map((val, key) => {
-                    return (
-                    <Card className={classes.root} variant="outlined" key={key}>
-                      <CardContent>
-                        <Typography className={classes.cardTitle} color="textSecondary" gutterBottom>
-                          ICAO: {val.icao24}
-                        </Typography>
-                        <Typography variant="h5" component="h2">
-                          ArrivalAirport: {val.estArrivalAirport}
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                          HorizontalDistance : {val.estArrivalAirportHorizDistance}
-                        </Typography>
-                        <Typography variant="body2" component="p">
-                          VerticalDistance : {val.estArrivalAirportVertDistance}
-                          <br />
-                        </Typography>
-                      </CardContent>
-                      {/* <CardActions>
+                {
+                  allFlights && allFlights.map((val, key) => {
+                    return (val.lastSeen > lastArrival) && (
+                      <Card className={classes.root} variant="outlined" key={key}>
+                        <CardContent>
+                          <Typography className={classes.cardTitle} color="textSecondary" gutterBottom>
+                            ICAO: {val.icao24}
+                          </Typography>
+                          <Typography variant="h5" component="h2">
+                            DepartureAirport: {val.estDepartureAirport}
+                          </Typography>
+                          <Typography variant="h5" component="h2">
+                            ArrivalAirport: {val.estArrivalAirport}
+                          </Typography>
+                          <Typography variant="body2" component="p">
+                            HorizontalDistance : {val.estDepartureAirportHorizDistance}
+                          </Typography>
+                          <Typography variant="body2" component="p">
+                            VerticalDistance : {val.estDepartureAirportVertDistance}
+                            <br />
+                          </Typography>
+                          <Typography variant="body2" component="p">
+                            CallSign : {val.callsign}
+                            <br />
+                          </Typography>
+                        </CardContent>
+                        {/* <CardActions>
                         <Button size="small" onClick={() => { getCityInfo(value); }}>Flight Info</Button>
                       </CardActions> */}
-                    </Card>
+                      </Card>
                     );
                   })
                 }
@@ -276,50 +297,32 @@ function HomePage() {
 
   function getCityInfo(value) {
     console.log(value);
-    let curTimestamp = new Date().getTime()/1000 | 0;
-    console.log("curTimestamp ====> ", curTimestamp);
-    getDeparture(value[0], curTimestamp - 10 * 60 * 1000, curTimestamp + 10 * 60 * 1000);
-    getArrival(value[0], curTimestamp - 10 * 60 * 1000, curTimestamp + 10 * 60 * 1000);
+    getFlightsByAircraft(value[0]);
+    // getDeparture(curTimestamp - 10 * 60 * 1000, curTimestamp + 10 * 60 * 1000);
+    // getArrival(curTimestamp - 10 * 60 * 1000, curTimestamp + 10 * 60 * 1000);
     setOpen(true);
-    setItemValue(value);
+    // setItemValue(value);
   }
 
-  function getDeparture(icao, begin, end) {
+  function getFlightsByAircraft(icao24) {
+    let curTimestamp = new Date().getTime() / 1000 | 0;
+    console.log("curTimestamp ====> ", curTimestamp);
+    let begin = curTimestamp - 48 *  60 * 60;
+    let end = curTimestamp;
+    console.log('begin === > ', begin)
+    console.log('end === > ', end)
     var options = {
       method: 'GET',
       headers: {}
     };
-    fetch('https://opensky-network.org/api/states/all?icao='+ icao +'&time=' + begin, options)
-    // fetch('https://opensky-network.org/api/flights/departure?airport=EDDF&begin=' + begin + '&end=' + end, options)
-    // fetch('https://opensky-network.org/api/flights/departure?airport='+ airport +'&begin=' + begin + '&end=' + end, options)
+    // fetch('https://opensky-network.org/api/flights/aircraft?icao24=3c675a&begin=1517184000&end=1517270400', options)
+    fetch('https://opensky-network.org/api/flights/aircraft?icao24='+icao24+'&begin='+begin+'&end='+end, options)
       .then(response => response.json())
       .then(data => {
-        setDepartingFlights(data);
-        // dispatch(success(data));
-        // history.push('/');
+        console.log(data);
+        setAllFlights(data);
       })
       .catch(error => {
-        // dispatch(failure(error.toString()));
-        // dispatch(alertActions.error(error.toString()));
-      });
-  }
-
-  function getArrival(airport, begin, end) {
-    var options = {
-      method: 'GET',
-      headers: {}
-    };
-    fetch('https://opensky-network.org/api/flights/arrival?airport=EDDF&begin=1517227200&end=1517230800', options)
-    // fetch('https://opensky-network.org/api/flights/arrival?airport='+ airport +'&begin=' + begin + '&end=' + end, options)
-      .then(response => response.json())
-      .then(data => {
-        setArrivingFlights(data);
-        // dispatch(success(data));
-        // history.push('/');
-      })
-      .catch(error => {
-        // dispatch(failure(error.toString()));
-        // dispatch(alertActions.error(error.toString()));
       });
   }
 
